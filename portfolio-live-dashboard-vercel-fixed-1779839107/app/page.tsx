@@ -62,6 +62,18 @@ const liveAssets = [
   { ticker: "XIAOMI80", name: "Xiaomi DR", account: "Dime Thai Stock", bucket: "Thai DR / equity", region: "Thailand", currency: "THB", shares: 645, costTotal: 10965.00, fallbackPrice: 12.40 },
   { ticker: "SAWAD", name: "Srisawad Corporation", account: "Thai broker", bucket: "Thai equity", region: "Thailand", currency: "THB", shares: 47, costTotal: null, fallbackPrice: 21.70 },
   { ticker: "BTS-W8", name: "BTS warrant", account: "Thai broker", bucket: "Thai warrant", region: "Thailand", currency: "THB", shares: 20, costTotal: null, fallbackPrice: 0.01 },
+
+  { ticker: "SGOV", ..., fallbackPrice: 100.64, dividendYield: 4.6 },
+  { ticker: "SCHD", ..., fallbackPrice: 32.77, dividendYield: 3.4 },
+  { ticker: "JEPQ", ..., fallbackPrice: 60.50, dividendYield: 10.5 },
+  { ticker: "O", ..., fallbackPrice: 62.32, dividendYield: 5.5 },
+  { ticker: "USHY", ..., fallbackPrice: 37.05, dividendYield: 6.8 },
+  { ticker: "SCHG", ..., fallbackPrice: 34.47, dividendYield: 0.7 },
+  { ticker: "SCHY", ..., fallbackPrice: 32.45, dividendYield: 4.1 },
+  { ticker: "VOO", ..., fallbackPrice: 688.58, dividendYield: 1.3 },
+  { ticker: "VIGI", ..., fallbackPrice: 94.15, dividendYield: 2.2 },
+  { ticker: "SE", ..., fallbackPrice: 89.77, dividendYield: 0.0 },
+  ...
 ] as const;
 
 const fixedAssets = [
@@ -161,6 +173,12 @@ async function fetchQuotes(): Promise<QuoteResponse> {
 }
 
 export default function PortfolioWebsite() {
+  const dividendAnnual = assets.reduce((sum, a: any) => {
+  const y = Number(a.dividendYield);
+  return sum + (y > 0 ? a.valueTHB * (y / 100) : 0);
+}, 0);
+
+const dividendMonthly = dividendAnnual / 12;
   const [query, setQuery] = useState("");
   const [monthlyDca, setMonthlyDca] = useState(40000);
   const [annualReturn, setAnnualReturn] = useState(6);
@@ -261,6 +279,12 @@ export default function PortfolioWebsite() {
         <StatusCard quoteState={quoteState} isLive={isLive} />
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Metric
+  title="Dividend projection (annual)"
+  value={thb.format(dividendAnnual)}
+  note={`${thb.format(dividendMonthly)} / month (estimate)`}
+  icon={<Banknote className="h-5 w-5" />}
+/>
           <Metric title="Total net worth tracked" value={thb.format(totalValue)} note="Holdings + cash accounts" icon={<Wallet className="h-5 w-5" />} />
           <Metric title="Cash" value={thb.format(cashValue)} note={`${pct.format(cashValue / totalValue * 100)}% of tracked portfolio`} icon={<Banknote className="h-5 w-5" />} />
           <Metric title="Visible unrealized P/L" value={thb.format(pnlVisible)} note="Excludes unknown cost basis positions" icon={<TrendingUp className="h-5 w-5" />} />
